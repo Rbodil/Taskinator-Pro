@@ -49,7 +49,7 @@ var saveTasks = function() {
 
 // compare with code snippet
 $(".list-group").sortable({
-  conectWith: $(".card .list-group"),
+  connectWith: $(".list-group"),
   scroll: false,
   tolerance: "pointer",
   helper: "clone",
@@ -89,7 +89,7 @@ $(".list-group").sortable({
     console.log(tempArr);
 
     var arrName = $(this)
-      .attr('id')
+      .attr("id")
       .replace("list-", "");
 
     tasks[arrName] = tempArr;
@@ -98,7 +98,7 @@ $(".list-group").sortable({
 });
 
 $('#trash').droppable({
-  accept: ".card .list-group-item",
+  accept: ".list-group-item",
   tolerance: "touch",
   drop: function(event, ui){
     ui.draggable.remove();

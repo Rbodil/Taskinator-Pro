@@ -13,7 +13,9 @@ var createTask = function(taskText, taskDate, taskList) {
   // append span and p element to parent li
   taskLi.append(taskSpan, taskP);
 
-
+  //get due date
+  auditTask(taskLi);
+  
   // append to ul list on the page
   $("#list-" + taskList).append(taskLi);
 
@@ -47,7 +49,7 @@ var saveTasks = function() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 };
 
-// compare with code snippet
+
 $(".list-group").sortable({
   connectWith: $(".list-group"),
   scroll: false,
@@ -111,7 +113,9 @@ $('#trash').droppable({
   }
 });
 
-
+$("#modalDueDate").datepicker({
+  minDate: 1
+});
 
 // modal was triggered
 $("#task-form-modal").on("show.bs.modal", function() {
@@ -147,6 +151,7 @@ $("#task-form-modal .btn-primary").click(function() {
   }
 });
 
+//click to change task
 $(".list-group").on("click","p", function() {
   var text = $(this)
     .text()
@@ -158,6 +163,7 @@ $(".list-group").on("click","p", function() {
   textInput.trigger("focus");
 });
 
+//click off task to save changes to task
 $(".list-group").on("blur", "textarea", function(){
   var text = $(this)
     .val();
@@ -178,6 +184,7 @@ $(".list-group").on("blur", "textarea", function(){
   $(this).replaceWith(taskP);
 });
 
+//click to change date with date picker
 $(".list-group").on("click", "span", function(){
   var date = $(this)
     .text()
@@ -187,10 +194,19 @@ $(".list-group").on("click", "span", function(){
     .addClass("form-control")
     .val(date);
   $(this).replaceWith(dateInput);
+
+  dateInput.datepicker({
+    minDate: 1,
+    onClose: function(){
+      $(this).trigger("change");
+    }
+  });
+
   dateInput.trigger("focus");
 });
 
-$(".list-group").on("blur","input[type='text']", function(){
+//click to save date change, or if no change revert to date previously selected
+$(".list-group").on("change","input[type='text']", function(){
   var date = $(this)
     .val();
   var status = $(this)
@@ -209,6 +225,9 @@ $(".list-group").on("blur","input[type='text']", function(){
     .text(date);
 
   $(this).replaceWith(taskSpan);
+
+  auditTask($(taskSpan).closest(".list-group-item"));
+
 });
 
 // remove all tasks
@@ -219,6 +238,32 @@ $("#remove-tasks").on("click", function() {
   }
   saveTasks();
 });
+
+function auditTask(taskEl){
+  var date = $(taskEl)
+    .find("span")
+    .text()
+    .trim();
+   
+  var time = moment(date, "L").set("hour", 17);
+  
+  $(taskEl).removeClass("list-group-item-warning list-group-item-danger")
+
+  if(moment().isAfter(time)){
+    $(taskEl).addClass("list-group-item-danger");
+  }
+  else if(Math.abs(moment().diff(time,"days"))<= 2){
+    $(taskEl).addClass("list-group-item-warning");
+  }
+
+};
+
+// I like this format, day month year, then HH gives you the 24hr time value
+// var tomorrow = moment().add(1, "day").format("dddd, D/MM/YYYY HH:mm:ss ");
+// console.log(tomorrow);
+
+//the same format for normies would be ("dddd, MM-D-YYYY [at] hh:mm:ss A")
+// you can use LLLL to type the above format in shorthand
 
 // load tasks for the first time
 loadTasks();
